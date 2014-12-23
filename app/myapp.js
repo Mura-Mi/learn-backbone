@@ -51,16 +51,28 @@
     tagName: 'ul',
     initialize: function() {
       this.collection.on('add', this.addNew, this);
+      this.collection.on('change', this.updateCount, this);
+      this.collection.on('destroy', this.updateCount, this);
     },
     addNew: function(task) {
       var taskView = new TaskView({model: task});
       this.$el.append(taskView.render().el);
+      $('#title').val('').focus();
+      this.updateCount();
+    },
+    updateCount: function() {
+      var uncompletedTasks = this.collection.filter(function(task){
+        return !task.get('completed');
+      })
+      var count = uncompletedTasks.length;
+      $('#count').html(count);
     },
     render: function() {
       this.collection.each(function(task) {
         var taskView = new TaskView({model: task});
         this.$el.append(taskView.render().el);
       }, this);
+      this.updateCount();
       return this;
     }, 
   });
@@ -75,6 +87,7 @@
       var task = new Task();
       if(task.set({'title': $('#title').val()}, {validate: true})) {
         this.collection.add(task);
+        $('#error').empty();
       }
     },
   });
